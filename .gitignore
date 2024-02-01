@@ -6,3 +6,8 @@ hardware/build/*
 !hardware/export/
 !hardware/constraint/
 !hardware/flight-controller.tcl
+
+software/*
+!software/flight_controller_sw/
+software/flight_controller_sw/*
+!software/flight_controller_sw/src/

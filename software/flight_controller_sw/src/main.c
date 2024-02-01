@@ -34,7 +34,7 @@ int main()
 //    	update_pwm4(get_ch3());
     	MPU_Print_Results();
 //    	MPU_Calibration();
-    	usleep(1000*20);
+//    	usleep(1000*20);
     }
     cleanup_platform();
     return 0;

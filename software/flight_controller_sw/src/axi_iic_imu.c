@@ -78,13 +78,14 @@ void MPU_Print_Results() {
 //	printf("Gyroscope Scale: %f\n\r", gyroscope_scale);
 
 
-    acceleration_buffer = MPU_6050_Get_Adjusted_XYZ_Acceleration();
+//    acceleration_buffer = MPU_6050_Get_Adjusted_XYZ_Acceleration();
 //    printf("(Accelerometer) X: %0.2f  Y: %0.2f  Z: %0.2f\t", acceleration_buffer[0] - (-0.022839), acceleration_buffer[1] - (0.018668 ), acceleration_buffer[2] - (1.037594));
-    printf("(Accelerometer) X: %0.2f  Y: %0.2f  Z: %0.2f\t", acceleration_buffer[0] , acceleration_buffer[1] , acceleration_buffer[2]);
+//    printf("%0.2f\n\r", acceleration_buffer[1]);
 
     gyroscope_buffer = MPU_6050_Get_Adjusted_XYZ_Gyroscope();
-    printf("(Gyroscope) X: %0.2f  Y: %0.2f  Z: %0.2f\n\r", gyroscope_buffer[0], gyroscope_buffer[1], gyroscope_buffer[2]);
-
+//    printf("(Gyroscope) X: %0.2f  Y: %0.2f  Z: %0.2f\n\r", gyroscope_buffer[0], gyroscope_buffer[1], gyroscope_buffer[2]);
+    printf("%0.2f\n\r", gyroscope_buffer[0]);
+//    printf("%0.2f\n\r", gyroscope_buffer[1]);
     usleep(1000*50);
 }
 
