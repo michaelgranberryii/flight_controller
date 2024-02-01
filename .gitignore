@@ -1,0 +1,8 @@
+hardware/*
+!hardware/build/
+hardware/build/*
+!hardware/build/.gitkeep
+!hardware/bd/
+!hardware/export/
+!hardware/constraint/
+!hardware/flight-controller.tcl
