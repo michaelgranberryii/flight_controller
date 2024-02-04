@@ -34,6 +34,7 @@ void tmr_ppm_init(){
 		xil_printf("TMR PPM SELF TEST FAILED\n\r");
 	}
 
+	void tmr_ppm_setup();
 }
 
 void tmr_ppm_setup() {
