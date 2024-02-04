@@ -30,7 +30,7 @@ dataList = []                                           # Create empty list vari
 fig = plt.figure()                                      # Create Matplotlib plots fig is the 'higher level' plot window
 ax = fig.add_subplot(111)                               # Add subplot to the main fig window
 
-ser = serial.Serial("/dev/ttyUSB3", 115200)            # Establish Serial object with COM port and BAUD rate to match Arduino Port/rate
+ser = serial.Serial("/dev/ttyUSB1", 115200)            # Establish Serial object with COM port and BAUD rate to match Arduino Port/rate
 time.sleep(0.050)                                       # Time delay for Arduino Serial initialization 
 
 # Matplotlib Animation Function that takes care of real-time plot.
