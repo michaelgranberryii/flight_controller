@@ -27,8 +27,10 @@
  *
  */
 
-#ifndef AXI_IIC_IMU_H   /* prevent circular inclusions */
-#define AXI_IIC_IMU_H
+#ifndef MPU_6050   /* prevent circular inclusions */
+#define MPU_6050
+
+#include "xiic.h"
 
 // Default I2C address for the MPU-6050
 #define MPU_6050_ADDRESS                        0x68
@@ -102,6 +104,8 @@
 
 #define ONE_HUNDRED_mSec                    			(1000*100)
 
+
+
 void iic_imu_init();
 void iic_imu_setup();
 void MPU_Print_Results();
@@ -132,9 +136,5 @@ void MPU_6050_Set_Gyroscope_Range(uint8_t gyroscope_range);
 float MPU_6050_Get_Gyroscope_Scale(uint8_t gyroscope_range);
 float* MPU_6050_Get_Adjusted_XYZ_Gyroscope();
 int16_t* MPU_6050_Get_Raw_XYZ_Gyroscope();
-
-// IIC R/W
-void MPU_WriteIIC(u8 reg, u8 *Data, int nData);
-void MPU_ReadIIC(u8 reg, u8 *Data, int nData);
 
 #endif  /* end of protection macro */

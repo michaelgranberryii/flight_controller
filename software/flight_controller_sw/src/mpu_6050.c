@@ -34,16 +34,12 @@
 #include "xil_exception.h"
 #include "xscugic.h"
 #include "xparameters.h"
-#include "axi_iic_imu.h"
+#include "mpu_6050.h"
+#include "iic.h"
 #include "sleep.h"
 
-XIic_Config *iic_config;
-XIic iic_imu;
 
-const u8 chipAddr = 0x68;
-u8 currentRegister;
-u8 recvbytes;
-u8 *recv;
+IIC iic_imu;
 
 int16_t* raw_acceleration_buffer;
 float* acceleration_buffer;
@@ -78,46 +74,25 @@ void MPU_Print_Results() {
 //	printf("Gyroscope Scale: %f\n\r", gyroscope_scale);
 
 
-//    acceleration_buffer = MPU_6050_Get_Adjusted_XYZ_Acceleration();
-//    printf("(Accelerometer) X: %0.2f  Y: %0.2f  Z: %0.2f\t", acceleration_buffer[0] - (-0.022839), acceleration_buffer[1] - (0.018668 ), acceleration_buffer[2] - (1.037594));
+    acceleration_buffer = MPU_6050_Get_Adjusted_XYZ_Acceleration();
+    printf("(Accelerometer) X: %0.2f  Y: %0.2f  Z: %0.2f\t", acceleration_buffer[0] - acceleration_cal[0], acceleration_buffer[1] - acceleration_cal[1], acceleration_buffer[2] - acceleration_cal[2]);
 //    printf("%0.2f\n\r", acceleration_buffer[1]);
 
     gyroscope_buffer = MPU_6050_Get_Adjusted_XYZ_Gyroscope();
-//    printf("(Gyroscope) X: %0.2f  Y: %0.2f  Z: %0.2f\n\r", gyroscope_buffer[0], gyroscope_buffer[1], gyroscope_buffer[2]);
-    printf("%0.2f\n\r", gyroscope_buffer[0]);
+    printf("(Gyroscope) X: %0.2f  Y: %0.2f  Z: %0.2f\n\r", gyroscope_buffer[0], gyroscope_buffer[1], gyroscope_buffer[2]);
+//    printf("%0.2f\n\r", gyroscope_buffer[0]);
 //    printf("%0.2f\n\r", gyroscope_buffer[1]);
     usleep(1000*50);
 }
 
 void iic_imu_init() {
-	int status = XIic_Initialize(&iic_imu, XPAR_AXI_IIC_0_DEVICE_ID);
-	if(status == XST_SUCCESS)
-		xil_printf("IIC IMU Init Successful\n\r");
-	else
-		xil_printf("IIC IMU Init Failed\n\r");
-	 status = XIic_SelfTest(&iic_imu);
-	if(status == XST_SUCCESS) {
-		xil_printf("IIC IMU SELF TEST SUCCUSSFUL\n\r");
-	} else {
-		xil_printf("IIC IMU SELF TEST FAILED\n\r");
-	}
+	iic_begin(&iic_imu, XPAR_AXI_IIC_0_DEVICE_ID, MPU_6050_ADDRESS);
+	iic_imu_setup();
 }
 
 void iic_imu_setup() {
-	XIic_Stop(&iic_imu);
-	XIic_SetAddress(&iic_imu, XII_ADDR_TO_SEND_TYPE, chipAddr);
-//	u32 iic_options = XIic_GetOptions(&iic_imu);
-//	iic_options |= XII_GENERAL_CALL_OPTION;
-
 	// Reset the MPU-6050 Accelerometer and Gyroscope sensor
 	MPU_6050_Reset();
-
-	// test
-	u8 buf;
-	buf = 0x0d;
-	MPU_WriteIIC(I2C_MST_CTRL, &buf, 1);
-	MPU_ReadIIC(I2C_MST_CTRL, &buf, 1);
-	// end test
 
 	// Set CLKSEL config to 0x01: PLL with X axis gyroscope reference
 	MPU_6050_Set_Clock_Source(CLKSEL_PLL_X_AXIS_GYRO_REFERENCE);
@@ -140,45 +115,45 @@ void MPU_6050_Reset()
 {
 	u8 buf;
 	buf = MPU_REG_SET_BIT_7;
-	MPU_WriteIIC(MPU_6050_PWR_MGMT_1, &buf, 1);
+	write_iic(&iic_imu, MPU_6050_PWR_MGMT_1, &buf, 1);
 	usleep(ONE_HUNDRED_mSec);
 
 	buf = MPU_REG_SET_BIT_2 | MPU_REG_SET_BIT_1 | MPU_REG_SET_BIT_0;
-	MPU_WriteIIC(MPU_6050_SIGNAL_PATH_RESET, &buf, 1);
+	write_iic(&iic_imu, MPU_6050_SIGNAL_PATH_RESET, &buf, 1);
 	usleep(ONE_HUNDRED_mSec);
 }
 
 void MPU_6050_Set_Clock_Source(u8 clock_source_select)
 {
-	MPU_WriteIIC(MPU_6050_PWR_MGMT_1, &clock_source_select, 1);
+	write_iic(&iic_imu, MPU_6050_PWR_MGMT_1, &clock_source_select, 1);
     usleep(ONE_HUNDRED_mSec);
 }
 
 void MPU_6050_Set_Sample_Rate_Divider(uint8_t sample_rate_divider)
 {
-    MPU_WriteIIC(MPU_6050_SMPRT_DIV, &sample_rate_divider, 1);
+	write_iic(&iic_imu, MPU_6050_SMPRT_DIV, &sample_rate_divider, 1);
 }
 
 void MPU_6050_Set_DLPF_Bandwidth(uint8_t dlpf_cfg)
 {
-    MPU_WriteIIC(MPU_6050_CONFIG, &dlpf_cfg, 1);
+	write_iic(&iic_imu, MPU_6050_CONFIG, &dlpf_cfg, 1);
 }
 
 void MPU_6050_Set_Accelerometer_Range(uint8_t accelerometer_range)
 {
-    MPU_WriteIIC(MPU_6050_ACCEL_CONFIG, &accelerometer_range, 1);
+	write_iic(&iic_imu, MPU_6050_ACCEL_CONFIG, &accelerometer_range, 1);
 }
 
 void MPU_6050_Set_Gyroscope_Range(uint8_t gyroscope_range)
 {
-    MPU_WriteIIC(MPU_6050_GYRO_CONFIG, &gyroscope_range, 1);
+	write_iic(&iic_imu, MPU_6050_GYRO_CONFIG, &gyroscope_range, 1);
 }
 
 
 u8 MPU_6050_Get_Accelerometer_Range()
 {
     u8 MPU_6050_Accelerometer_Range;
-    MPU_ReadIIC(MPU_6050_ACCEL_CONFIG, &MPU_6050_Accelerometer_Range, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_CONFIG, &MPU_6050_Accelerometer_Range, 1);
     // Bit 4 and Bit 3 of the ACCEL_CONFIG register represents AFS_SEL[1:0]
     MPU_6050_Accelerometer_Range = (MPU_6050_Accelerometer_Range & (MPU_REG_SET_BIT_4 | MPU_REG_SET_BIT_3));
 
@@ -221,42 +196,42 @@ int MPU_6050_Get_Accelerometer_Scale(uint8_t accelerometer_range)
 uint8_t MPU_6050_Get_Accel_X_High_Byte()
 {
     uint8_t Accel_X_High_Byte;
-    MPU_ReadIIC(MPU_6050_ACCEL_XOUT_H, &Accel_X_High_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_XOUT_H, &Accel_X_High_Byte, 1);
     return Accel_X_High_Byte;
 }
 
 uint8_t MPU_6050_Get_Accel_X_Low_Byte()
 {
     uint8_t Accel_X_Low_Byte;
-    MPU_ReadIIC(MPU_6050_ACCEL_XOUT_L, &Accel_X_Low_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_XOUT_L, &Accel_X_Low_Byte, 1);
     return Accel_X_Low_Byte;
 }
 
 uint8_t MPU_6050_Get_Accel_Y_High_Byte()
 {
     uint8_t Accel_Y_High_Byte;
-    MPU_ReadIIC(MPU_6050_ACCEL_YOUT_H, &Accel_Y_High_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_YOUT_H, &Accel_Y_High_Byte, 1);
     return Accel_Y_High_Byte;
 }
 
 uint8_t MPU_6050_Get_Accel_Y_Low_Byte()
 {
     uint8_t Accel_Y_Low_Byte;
-    MPU_ReadIIC(MPU_6050_ACCEL_YOUT_L, &Accel_Y_Low_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_YOUT_L, &Accel_Y_Low_Byte, 1);
     return Accel_Y_Low_Byte;
 }
 
 uint8_t MPU_6050_Get_Accel_Z_High_Byte()
 {
     uint8_t Accel_Z_High_Byte;
-    MPU_ReadIIC(MPU_6050_ACCEL_ZOUT_H, &Accel_Z_High_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_ZOUT_H, &Accel_Z_High_Byte, 1);
     return Accel_Z_High_Byte;
 }
 
 uint8_t MPU_6050_Get_Accel_Z_Low_Byte()
 {
     uint8_t Accel_Z_Low_Byte;
-    MPU_ReadIIC(MPU_6050_ACCEL_ZOUT_L, &Accel_Z_Low_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_ACCEL_ZOUT_L, &Accel_Z_Low_Byte, 1);
     return Accel_Z_Low_Byte;
 }
 
@@ -307,7 +282,7 @@ float* MPU_6050_Get_Adjusted_XYZ_Acceleration()
 uint8_t MPU_6050_Get_Gyroscope_Range()
 {
     uint8_t MPU_6050_Gyroscope_Range;
-    MPU_ReadIIC(MPU_6050_GYRO_CONFIG, &MPU_6050_Gyroscope_Range, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_CONFIG, &MPU_6050_Gyroscope_Range, 1);
 
     // Bit 4 and Bit 3 of the GYRO_CONFIG register represents FS_SEL[1:0]
     MPU_6050_Gyroscope_Range = (MPU_6050_Gyroscope_Range & (MPU_REG_SET_BIT_4 | MPU_REG_SET_BIT_3));
@@ -351,42 +326,42 @@ float MPU_6050_Get_Gyroscope_Scale(uint8_t gyroscope_range)
 uint8_t MPU_6050_Get_Gyro_X_High_Byte()
 {
     uint8_t Gyro_X_High_Byte;
-    MPU_ReadIIC(MPU_6050_GYRO_XOUT_H, &Gyro_X_High_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_XOUT_H, &Gyro_X_High_Byte, 1);
     return Gyro_X_High_Byte;
 }
 
 uint8_t MPU_6050_Get_Gyro_X_Low_Byte()
 {
     uint8_t Gyro_X_Low_Byte;
-    MPU_ReadIIC(MPU_6050_GYRO_XOUT_L, &Gyro_X_Low_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_XOUT_L, &Gyro_X_Low_Byte, 1);
     return Gyro_X_Low_Byte;
 }
 
 uint8_t MPU_6050_Get_Gyro_Y_High_Byte()
 {
     uint8_t Gyro_Y_High_Byte;
-    MPU_ReadIIC(MPU_6050_GYRO_YOUT_H, &Gyro_Y_High_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_YOUT_H, &Gyro_Y_High_Byte, 1);
     return Gyro_Y_High_Byte;
 }
 
 uint8_t MPU_6050_Get_Gyro_Y_Low_Byte()
 {
     uint8_t Gyro_Y_Low_Byte;
-    MPU_ReadIIC(MPU_6050_GYRO_YOUT_L, &Gyro_Y_Low_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_YOUT_L, &Gyro_Y_Low_Byte, 1);
     return Gyro_Y_Low_Byte;
 }
 
 uint8_t MPU_6050_Get_Gyro_Z_High_Byte()
 {
     uint8_t Gyro_Z_High_Byte;
-    MPU_ReadIIC(MPU_6050_GYRO_ZOUT_H, &Gyro_Z_High_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_ZOUT_H, &Gyro_Z_High_Byte, 1);
     return Gyro_Z_High_Byte;
 }
 
 uint8_t MPU_6050_Get_Gyro_Z_Low_Byte()
 {
     uint8_t Gyro_Z_Low_Byte;
-    MPU_ReadIIC(MPU_6050_GYRO_ZOUT_L, &Gyro_Z_Low_Byte, 1);
+    read_iic(&iic_imu, MPU_6050_GYRO_ZOUT_L, &Gyro_Z_Low_Byte, 1);
     return Gyro_Z_Low_Byte;
 }
 
@@ -432,46 +407,6 @@ float* MPU_6050_Get_Adjusted_XYZ_Gyroscope()
     gyroscope_buffer[2] = Gyroscope_Z;
 
     return gyroscope_buffer;
-}
-
-void MPU_WriteIIC(u8 reg, u8 *Data, int nData) {
-   u8 out[10];
-   out[0] = reg;
-   out[1] = *Data;
-   int Status;
-
-   if (currentRegister != reg) {
-      currentRegister = reg;
-   }
-   Status = XIic_Start(&iic_imu);
-   if (Status != XST_SUCCESS) {
-      return;
-   }
-   XIic_Send(XPAR_AXI_IIC_0_BASEADDR, chipAddr, out, nData + 1, XIIC_STOP);
-
-   Status = XIic_Stop(&iic_imu);
-   if (Status != XST_SUCCESS) {
-      return;
-   }
-}
-
-void MPU_ReadIIC(u8 reg, u8 *Data, int nData) {
-   int Status;
-   Status = XIic_Start(&iic_imu);
-   if (Status != XST_SUCCESS) {
-      return;
-   }
-   if (currentRegister != reg) {
-
-      XIic_Send(XPAR_AXI_IIC_0_BASEADDR, chipAddr, &reg, 1, XII_REPEATED_START_OPTION);
-      currentRegister = reg;
-   }
-   XIic_Recv(XPAR_AXI_IIC_0_BASEADDR, chipAddr, Data, nData, XIIC_STOP);
-
-   Status = XIic_Stop(&iic_imu);
-   if (Status != XST_SUCCESS) {
-      return;
-   }
 }
 
 
