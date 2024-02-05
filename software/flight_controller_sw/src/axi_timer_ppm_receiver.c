@@ -1,14 +1,6 @@
-#include <stdio.h>
-#include "platform.h"
-#include "xtmrctr.h"
-#include "xil_exception.h"
-#include "xscugic.h"
-#include "xparameters.h"
 #include "axi_timer_ppm_receiver.h"
 
 XTmrCtr tmr_ppm;
-XScuGic_Config *gic_config;
-XScuGic gic;
 
 
 u32 ch[NUM_OF_CH];
@@ -34,7 +26,7 @@ void tmr_ppm_init(){
 		xil_printf("TMR PPM SELF TEST FAILED\n\r");
 	}
 
-	void tmr_ppm_setup();
+	tmr_ppm_setup();
 }
 
 void tmr_ppm_setup() {
@@ -45,24 +37,10 @@ void tmr_ppm_setup() {
 	XTmrCtr_Start(&tmr_ppm, XTC_TIMER_0);
 }
 
-void gicInit(){
-	int status = 0;
-	gic_config = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
-
-	status = XScuGic_CfgInitialize(&gic, gic_config, gic_config->CpuBaseAddress);
-	if(status == XST_SUCCESS)
-		xil_printf("GIC Init Successful\n\r");
-	else
-		xil_printf("GIC Init Failed\n\r");
-
-	// Init and enable exception
-	Xil_ExceptionInit();
-	Xil_ExceptionRegisterHandler(XIL_EXCEPTION_ID_IRQ_INT, (Xil_ExceptionHandler) XScuGic_InterruptHandler,	&gic);
-	Xil_ExceptionEnable();
-
+s32 trm_ppm_intr_init(XScuGic *gic) {
 	// Connect and enable GIC
-	XScuGic_Connect(&gic, XPAR_FABRIC_AXI_TIMER_PPM_INTERRUPT_INTR, (Xil_InterruptHandler)tmrHandler, &tmr_ppm);
-	XScuGic_Enable(&gic, XPAR_FABRIC_AXI_TIMER_PPM_INTERRUPT_INTR);
+	XScuGic_Connect(gic, XPAR_FABRIC_AXI_TIMER_PPM_INTERRUPT_INTR, (Xil_InterruptHandler)tmrHandler, &tmr_ppm);
+	XScuGic_Enable(gic, XPAR_FABRIC_AXI_TIMER_PPM_INTERRUPT_INTR);
 }
 
 void tmrHandler(){
