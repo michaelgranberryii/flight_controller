@@ -51,7 +51,7 @@ int main()
     iic_imu_init();
 
     // BME
-//    iic_bme_init();
+    iic_bme_init();
 
     // GPS
     uart_be_init();
@@ -62,6 +62,7 @@ int main()
     gicInit();
 
     // Calibration
+    xil_printf("Calibrating IMU...\n\r");
     blink_led(RED_RGB_LED);
     MPU_Calibration();
 
@@ -75,10 +76,11 @@ int main()
     	update_pwm3(get_ch3());
     	update_pwm4(get_ch4());
     	MPU_Print_Results();
-//    	read_bme();
-//    	MPU_Calibration();
+    	bme_280_read_hum();
+    	bme_280_read_temp();
+    	bme_280_read_press();
     	uart_loopback_test();
-    	usleep(1000*500);
+    	usleep(1000*20);
     }
     cleanup_platform();
     return 0;
