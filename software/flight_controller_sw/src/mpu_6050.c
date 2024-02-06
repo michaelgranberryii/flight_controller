@@ -86,6 +86,7 @@ void MPU_Print_Results() {
 }
 
 void iic_imu_init() {
+	iic_imu.chipAddr = MPU_6050_ADDRESS;
 	iic_begin(&iic_imu, XPAR_AXI_IIC_0_DEVICE_ID, MPU_6050_ADDRESS);
 	iic_imu_setup();
 }
