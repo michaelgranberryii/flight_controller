@@ -15,6 +15,6 @@ typedef struct IIC {
 
 void iic_begin(IIC *InstancePtr, u32 IIC_Address, u8 Chip_Address);
 void iic_init(XIic *Iic);
-void write_iic(IIC *InstancePtr, u8 reg, u8 *Data, int nData);
-void read_iic(IIC *InstancePtr, u8 reg, u8 *Data, int nData);
+void iic_write(IIC *InstancePtr, u8 reg, u8 *Data, int nData);
+void iic_read(IIC *InstancePtr, u8 reg, u8 *Data, int nData);
 #endif  /* end of protection macro */

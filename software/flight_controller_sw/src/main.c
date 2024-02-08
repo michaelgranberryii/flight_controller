@@ -15,7 +15,7 @@
 XScuGic_Config *gic_config;
 XScuGic gic;
 
-void gicInit(){
+void gic_init(){
 	int status = 0;
 	gic_config = XScuGic_LookupConfig(XPAR_PS7_SCUGIC_0_DEVICE_ID);
 
@@ -31,7 +31,7 @@ void gicInit(){
 	Xil_ExceptionEnable();
 
 	trm_ppm_intr_init(&gic);
-	uart_be_intr_init(&gic);
+	be_880_interrupt_init(&gic);
 }
 
 int main()
@@ -39,48 +39,49 @@ int main()
     init_platform();
 
     // RGB GPIO
-    gpio_rgb_init();
+    rgb_led_init();
 
     // PPM
-    tmr_ppm_init();
+    ppm_init();
 
     // PWM
-    trm_pwm_init_setup_all();
+    pwm_init_all();
 
     // IMU
-    iic_imu_init();
+    mpu_6050_init();
 
     // BME
-    iic_bme_init();
+    bme_280_init();
 
     // GPS
-    uart_be_init();
+    be_880_init();
 
     // TODO Compass
 
     // GIC
-    gicInit();
+    gic_init();
 
     // Calibration
+    rgb_led_set_output(RED_RGB_LED);
     xil_printf("Calibrating IMU...\n\r");
-    blink_led(RED_RGB_LED);
-    MPU_Calibration();
+    mpu_calibration();
+    xil_printf("Calibrating BME...\n\r");
+    bme_280_alt_calibration();
 
     // Ready
-    blink_led(GREEN_RGB_LED);
+    rgb_led_set_output(GREEN_RGB_LED);
     xil_printf("Launching Flight Controller\n\r");
     while(1) {
-    	print_channel_time();
-    	update_pwm1(get_ch1());
-    	update_pwm2(get_ch2());
-    	update_pwm3(get_ch3());
-    	update_pwm4(get_ch4());
-    	MPU_Print_Results();
-    	bme_280_read_hum();
-    	bme_280_read_temp();
-    	bme_280_read_press();
-    	uart_loopback_test();
-    	usleep(1000*20);
+//    	print_channel_time();
+//    	pwm_update_pwm1(get_ch1());
+//    	pwm_update_pwm2(get_ch2());
+//    	pwm_update_pwm3(get_ch3());
+//    	pwm_update_pwm4(get_ch4());
+//    	mpu_6050_print_results();
+    	printf("Alt[cm]: %f, Press[hPa]: %f, Temp[C]: %0.2f, Hum[%%RH]: %0.3f\n\r",bme_280_get_altitude(), (((float)bme_280_get_corrected_press())/256)/100, ((float)bme_280_get_corrected_temp())/100, ((float)bme_280_get_corrected_hum())/1024);
+
+//    	be_880_uart_loopback_test();
+    	usleep(1000*50);
     }
     cleanup_platform();
     return 0;

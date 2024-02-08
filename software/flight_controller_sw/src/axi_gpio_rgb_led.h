@@ -18,7 +18,7 @@
 #define WHITE_RGB_LED 0x7
 #define OFF_RGB_LED 0x4
 
-void gpio_rgb_init(void);
-void blink_led(u32 rgb_color);
+void rgb_led_init(void);
+void rgb_led_set_output(u32 rgb_color);
 
 #endif  /* end of protection macro */

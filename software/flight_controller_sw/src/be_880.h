@@ -9,10 +9,9 @@
 
 #define TEST_BUFFER_SIZE        2048
 
-void uart_be_init();
-void uart_loopback_test();
-s32 uart_be_intr_init(XScuGic *gic);
-void test();
-void SendHandler(void *CallBackRef, unsigned int EventData);
-void RecvHandler(void *CallBackRef, unsigned int EventData);
+void be_880_init();
+void be_880_uart_loopback_test();
+s32 be_880_interrupt_init(XScuGic *gic);
+void be_880_send_handler(void *CallBackRef, unsigned int EventData);
+void be_880_recv_handler(void *CallBackRef, unsigned int EventData);
 #endif  /* end of protection macro */

@@ -13,7 +13,7 @@ u32 get_ch1();
 u32 get_ch2();
 u32 get_ch3();
 u32 get_ch4();
-void tmr_ppm_init();
+void ppm_init();
 void tmr_ppm_setup();
 s32 trm_ppm_intr_init(XScuGic *gic);
 void print_channel_time();

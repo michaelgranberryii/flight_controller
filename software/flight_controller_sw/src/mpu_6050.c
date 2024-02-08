@@ -39,7 +39,7 @@
 #include "sleep.h"
 
 
-IIC iic_imu;
+IIC mpu_6050;
 
 int16_t* raw_acceleration_buffer;
 float* acceleration_buffer;
@@ -48,9 +48,9 @@ float* acceleration_cal;
 int16_t* raw_gyroscope_buffer;
 float* gyroscope_buffer;
 
-void MPU_Calibration() {
+void mpu_calibration() {
 	for (int i = 0; i < 2000; i++) {
-		acceleration_buffer = MPU_6050_Get_Adjusted_XYZ_Acceleration();
+		acceleration_buffer = mpu_6050_get_adjusted_xyz_acceleration();
 		acceleration_cal[0] += acceleration_buffer[0];
 		acceleration_cal[1] += acceleration_buffer[1];
 		acceleration_cal[2] += acceleration_buffer[2];
@@ -64,7 +64,7 @@ void MPU_Calibration() {
 	printf("(out Accelerometer) X: %f  Y: %f  Z: %f\n\r", acceleration_cal[0], acceleration_cal[1], acceleration_cal[2]);
 }
 
-void MPU_Print_Results() {
+void mpu_6050_print_results() {
 //	u8 accelerometer_range = MPU_6050_Get_Accelerometer_Range();
 //	int accelerometer_scale = MPU_6050_Get_Accelerometer_Scale(accelerometer_range);
 //	printf("Accelerometer Scale: %d\n\r", accelerometer_scale);
@@ -74,94 +74,94 @@ void MPU_Print_Results() {
 //	printf("Gyroscope Scale: %f\n\r", gyroscope_scale);
 
 
-    acceleration_buffer = MPU_6050_Get_Adjusted_XYZ_Acceleration();
+    acceleration_buffer = mpu_6050_get_adjusted_xyz_acceleration();
     printf("(Accelerometer) X: %0.2f  Y: %0.2f  Z: %0.2f\t", acceleration_buffer[0] - acceleration_cal[0], acceleration_buffer[1] - acceleration_cal[1], acceleration_buffer[2] - acceleration_cal[2]);
 //    printf("%0.2f\n\r", acceleration_buffer[1]);
 
-    gyroscope_buffer = MPU_6050_Get_Adjusted_XYZ_Gyroscope();
+    gyroscope_buffer = mpu_6050_get_adjusted_xyz_gyroscope();
     printf("(Gyroscope) X: %0.2f  Y: %0.2f  Z: %0.2f\n\r", gyroscope_buffer[0], gyroscope_buffer[1], gyroscope_buffer[2]);
 //    printf("%0.2f\n\r", gyroscope_buffer[0]);
 //    printf("%0.2f\n\r", gyroscope_buffer[1]);
     usleep(1000*50);
 }
 
-void iic_imu_init() {
-	iic_imu.chipAddr = MPU_6050_ADDRESS;
-	iic_begin(&iic_imu, XPAR_AXI_IIC_0_DEVICE_ID, MPU_6050_ADDRESS);
-	iic_imu_setup();
+void mpu_6050_init() {
+	mpu_6050.chipAddr = MPU_6050_ADDRESS;
+	iic_begin(&mpu_6050, XPAR_AXI_IIC_0_DEVICE_ID, MPU_6050_ADDRESS);
+	mpu_6050_setup();
 }
 
-void iic_imu_setup() {
+void mpu_6050_setup() {
 	// Reset the MPU-6050 Accelerometer and Gyroscope sensor
-	MPU_6050_Reset();
+	mpu_6050_reset();
 
 	// Set CLKSEL config to 0x01: PLL with X axis gyroscope reference
-	MPU_6050_Set_Clock_Source(CLKSEL_PLL_X_AXIS_GYRO_REFERENCE);
+	mpu_6050_set_clock_source(CLKSEL_PLL_X_AXIS_GYRO_REFERENCE);
 
     // Set sample rate value to default
-    MPU_6050_Set_Sample_Rate_Divider(0x00);
+    mpu_6050_set_sample_rate_divider(0x00);
 
     // Set Digital Low-Pass Filter Bandwidth to 21 Hz
-    MPU_6050_Set_DLPF_Bandwidth(MPU_6050_DLPF_CFG_BANDWIDTH_10_HZ);
+    mpu_6050_set_dlpf_bandwidth(MPU_6050_DLPF_CFG_BANDWIDTH_10_HZ);
 
     // Set accelerometer range to +/- 8g
-    MPU_6050_Set_Accelerometer_Range(MPU_6050_ACCEL_RANGE_8_G);
+    mpu_6050_set_accelerometer_range(MPU_6050_ACCEL_RANGE_8_G);
 
     // Set gyroscope range to +/- 500 degrees/second
-    MPU_6050_Set_Gyroscope_Range(MPU_6050_GYRO_RANGE_500_DEG);
+    mpu_6050_set_gyroscope_range(MPU_6050_GYRO_RANGE_500_DEG);
 
 }
 
-void MPU_6050_Reset()
+void mpu_6050_reset()
 {
 	u8 buf;
 	buf = MPU_REG_SET_BIT_7;
-	write_iic(&iic_imu, MPU_6050_PWR_MGMT_1, &buf, 1);
+	iic_write(&mpu_6050, MPU_6050_PWR_MGMT_1, &buf, 1);
 	usleep(ONE_HUNDRED_mSec);
 
 	buf = MPU_REG_SET_BIT_2 | MPU_REG_SET_BIT_1 | MPU_REG_SET_BIT_0;
-	write_iic(&iic_imu, MPU_6050_SIGNAL_PATH_RESET, &buf, 1);
+	iic_write(&mpu_6050, MPU_6050_SIGNAL_PATH_RESET, &buf, 1);
 	usleep(ONE_HUNDRED_mSec);
 }
 
-void MPU_6050_Set_Clock_Source(u8 clock_source_select)
+void mpu_6050_set_clock_source(u8 clock_source_select)
 {
-	write_iic(&iic_imu, MPU_6050_PWR_MGMT_1, &clock_source_select, 1);
+	iic_write(&mpu_6050, MPU_6050_PWR_MGMT_1, &clock_source_select, 1);
     usleep(ONE_HUNDRED_mSec);
 }
 
-void MPU_6050_Set_Sample_Rate_Divider(uint8_t sample_rate_divider)
+void mpu_6050_set_sample_rate_divider(uint8_t sample_rate_divider)
 {
-	write_iic(&iic_imu, MPU_6050_SMPRT_DIV, &sample_rate_divider, 1);
+	iic_write(&mpu_6050, MPU_6050_SMPRT_DIV, &sample_rate_divider, 1);
 }
 
-void MPU_6050_Set_DLPF_Bandwidth(uint8_t dlpf_cfg)
+void mpu_6050_set_dlpf_bandwidth(uint8_t dlpf_cfg)
 {
-	write_iic(&iic_imu, MPU_6050_CONFIG, &dlpf_cfg, 1);
+	iic_write(&mpu_6050, MPU_6050_CONFIG, &dlpf_cfg, 1);
 }
 
-void MPU_6050_Set_Accelerometer_Range(uint8_t accelerometer_range)
+void mpu_6050_set_accelerometer_range(uint8_t accelerometer_range)
 {
-	write_iic(&iic_imu, MPU_6050_ACCEL_CONFIG, &accelerometer_range, 1);
+	iic_write(&mpu_6050, MPU_6050_ACCEL_CONFIG, &accelerometer_range, 1);
 }
 
-void MPU_6050_Set_Gyroscope_Range(uint8_t gyroscope_range)
+void mpu_6050_set_gyroscope_range(uint8_t gyroscope_range)
 {
-	write_iic(&iic_imu, MPU_6050_GYRO_CONFIG, &gyroscope_range, 1);
+	iic_write(&mpu_6050, MPU_6050_GYRO_CONFIG, &gyroscope_range, 1);
 }
 
 
-u8 MPU_6050_Get_Accelerometer_Range()
+u8 mpu_6050_get_accelerometer_range()
 {
     u8 MPU_6050_Accelerometer_Range;
-    read_iic(&iic_imu, MPU_6050_ACCEL_CONFIG, &MPU_6050_Accelerometer_Range, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_CONFIG, &MPU_6050_Accelerometer_Range, 1);
     // Bit 4 and Bit 3 of the ACCEL_CONFIG register represents AFS_SEL[1:0]
     MPU_6050_Accelerometer_Range = (MPU_6050_Accelerometer_Range & (MPU_REG_SET_BIT_4 | MPU_REG_SET_BIT_3));
 
     return MPU_6050_Accelerometer_Range;
 }
 
-int MPU_6050_Get_Accelerometer_Scale(uint8_t accelerometer_range)
+int mpu_6050_get_accelerometer_scale(uint8_t accelerometer_range)
 {
     int accelerometer_scale;
 
@@ -194,62 +194,62 @@ int MPU_6050_Get_Accelerometer_Scale(uint8_t accelerometer_range)
     return accelerometer_scale;
 }
 
-uint8_t MPU_6050_Get_Accel_X_High_Byte()
+uint8_t mpu_6050_get_accel_x_high_byte()
 {
     uint8_t Accel_X_High_Byte;
-    read_iic(&iic_imu, MPU_6050_ACCEL_XOUT_H, &Accel_X_High_Byte, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_XOUT_H, &Accel_X_High_Byte, 1);
     return Accel_X_High_Byte;
 }
 
-uint8_t MPU_6050_Get_Accel_X_Low_Byte()
+uint8_t mpu_6050_get_accel_x_low_byte()
 {
     uint8_t Accel_X_Low_Byte;
-    read_iic(&iic_imu, MPU_6050_ACCEL_XOUT_L, &Accel_X_Low_Byte, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_XOUT_L, &Accel_X_Low_Byte, 1);
     return Accel_X_Low_Byte;
 }
 
-uint8_t MPU_6050_Get_Accel_Y_High_Byte()
+uint8_t mpu_6050_get_accel_y_high_byte()
 {
     uint8_t Accel_Y_High_Byte;
-    read_iic(&iic_imu, MPU_6050_ACCEL_YOUT_H, &Accel_Y_High_Byte, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_YOUT_H, &Accel_Y_High_Byte, 1);
     return Accel_Y_High_Byte;
 }
 
-uint8_t MPU_6050_Get_Accel_Y_Low_Byte()
+uint8_t mpu_6050_get_accel_y_low_byte()
 {
     uint8_t Accel_Y_Low_Byte;
-    read_iic(&iic_imu, MPU_6050_ACCEL_YOUT_L, &Accel_Y_Low_Byte, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_YOUT_L, &Accel_Y_Low_Byte, 1);
     return Accel_Y_Low_Byte;
 }
 
-uint8_t MPU_6050_Get_Accel_Z_High_Byte()
+uint8_t mpu_6050_get_accel_z_high_byte()
 {
     uint8_t Accel_Z_High_Byte;
-    read_iic(&iic_imu, MPU_6050_ACCEL_ZOUT_H, &Accel_Z_High_Byte, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_ZOUT_H, &Accel_Z_High_Byte, 1);
     return Accel_Z_High_Byte;
 }
 
-uint8_t MPU_6050_Get_Accel_Z_Low_Byte()
+uint8_t mpu_6050_get_accel_z_low_byte()
 {
     uint8_t Accel_Z_Low_Byte;
-    read_iic(&iic_imu, MPU_6050_ACCEL_ZOUT_L, &Accel_Z_Low_Byte, 1);
+    iic_read(&mpu_6050, MPU_6050_ACCEL_ZOUT_L, &Accel_Z_Low_Byte, 1);
     return Accel_Z_Low_Byte;
 }
 
-int16_t* MPU_6050_Get_Raw_XYZ_Acceleration()
+int16_t* mpu_6050_get_raw_xyz_acceleration()
 {
     static int16_t raw_acceleration_buffer[3];
 
-    uint8_t Raw_Acceleration_X_High_Byte = MPU_6050_Get_Accel_X_High_Byte();
-    uint8_t Raw_Acceleration_X_Low_Byte = MPU_6050_Get_Accel_X_Low_Byte();
+    uint8_t Raw_Acceleration_X_High_Byte = mpu_6050_get_accel_x_high_byte();
+    uint8_t Raw_Acceleration_X_Low_Byte = mpu_6050_get_accel_x_low_byte();
     int16_t Raw_Acceleration_X = (Raw_Acceleration_X_High_Byte << 8) | Raw_Acceleration_X_Low_Byte;
 
-    uint8_t Raw_Acceleration_Y_High_Byte = MPU_6050_Get_Accel_Y_High_Byte();
-    uint8_t Raw_Acceleration_Y_Low_Byte = MPU_6050_Get_Accel_Y_Low_Byte();
+    uint8_t Raw_Acceleration_Y_High_Byte = mpu_6050_get_accel_y_high_byte();
+    uint8_t Raw_Acceleration_Y_Low_Byte = mpu_6050_get_accel_y_low_byte();
     int16_t Raw_Acceleration_Y = (Raw_Acceleration_Y_High_Byte << 8) | Raw_Acceleration_Y_Low_Byte;
 
-    uint8_t Raw_Acceleration_Z_High_Byte = MPU_6050_Get_Accel_Z_High_Byte();
-    uint8_t Raw_Acceleration_Z_Low_Byte = MPU_6050_Get_Accel_Z_Low_Byte();
+    uint8_t Raw_Acceleration_Z_High_Byte = mpu_6050_get_accel_z_high_byte();
+    uint8_t Raw_Acceleration_Z_Low_Byte = mpu_6050_get_accel_z_low_byte();
     int16_t Raw_Acceleration_Z = (Raw_Acceleration_Z_High_Byte << 8) | Raw_Acceleration_Z_Low_Byte;
 
     raw_acceleration_buffer[0] = Raw_Acceleration_X;
@@ -259,15 +259,15 @@ int16_t* MPU_6050_Get_Raw_XYZ_Acceleration()
     return raw_acceleration_buffer;
 }
 
-float* MPU_6050_Get_Adjusted_XYZ_Acceleration()
+float* mpu_6050_get_adjusted_xyz_acceleration()
 {
     int16_t* raw_acceleration_buffer;
     static float acceleration_buffer[3];
 
-    uint8_t accelerometer_range = MPU_6050_Get_Accelerometer_Range();
-    int accelerometer_scale = MPU_6050_Get_Accelerometer_Scale(accelerometer_range);
+    uint8_t accelerometer_range = mpu_6050_get_accelerometer_range();
+    int accelerometer_scale = mpu_6050_get_accelerometer_scale(accelerometer_range);
 
-    raw_acceleration_buffer = MPU_6050_Get_Raw_XYZ_Acceleration();
+    raw_acceleration_buffer = mpu_6050_get_raw_xyz_acceleration();
 
     float Acceleration_X = ((float)(raw_acceleration_buffer[0])) / accelerometer_scale;
     float Acceleration_Y = ((float)(raw_acceleration_buffer[1])) / accelerometer_scale;
@@ -280,10 +280,10 @@ float* MPU_6050_Get_Adjusted_XYZ_Acceleration()
     return acceleration_buffer;
 }
 
-uint8_t MPU_6050_Get_Gyroscope_Range()
+uint8_t mpu_6050_get_gyroscope_range()
 {
     uint8_t MPU_6050_Gyroscope_Range;
-    read_iic(&iic_imu, MPU_6050_GYRO_CONFIG, &MPU_6050_Gyroscope_Range, 1);
+    iic_read(&mpu_6050, MPU_6050_GYRO_CONFIG, &MPU_6050_Gyroscope_Range, 1);
 
     // Bit 4 and Bit 3 of the GYRO_CONFIG register represents FS_SEL[1:0]
     MPU_6050_Gyroscope_Range = (MPU_6050_Gyroscope_Range & (MPU_REG_SET_BIT_4 | MPU_REG_SET_BIT_3));
@@ -291,7 +291,7 @@ uint8_t MPU_6050_Get_Gyroscope_Range()
     return MPU_6050_Gyroscope_Range;
 }
 
-float MPU_6050_Get_Gyroscope_Scale(uint8_t gyroscope_range)
+float mpu_6050_get_gyroscope_scale(uint8_t gyroscope_range)
 {
     float gyroscope_scale;
 
@@ -324,62 +324,63 @@ float MPU_6050_Get_Gyroscope_Scale(uint8_t gyroscope_range)
     return gyroscope_scale;
 }
 
-uint8_t MPU_6050_Get_Gyro_X_High_Byte()
+uint8_t mpu_6050_get_gyro_x_high_byte()
 {
-    uint8_t Gyro_X_High_Byte;
-    read_iic(&iic_imu, MPU_6050_GYRO_XOUT_H, &Gyro_X_High_Byte, 1);
-    return Gyro_X_High_Byte;
+    uint8_t gyro_x_high_byte;
+    iic_read(&mpu_6050, MPU_6050_GYRO_XOUT_H, &gyro_x_high_byte, 1);
+    return gyro_x_high_byte;
 }
 
-uint8_t MPU_6050_Get_Gyro_X_Low_Byte()
+uint8_t mpu_6050_get_gyro_x_low_byte()
 {
-    uint8_t Gyro_X_Low_Byte;
-    read_iic(&iic_imu, MPU_6050_GYRO_XOUT_L, &Gyro_X_Low_Byte, 1);
-    return Gyro_X_Low_Byte;
+    uint8_t gyro_x_low_byte;
+    iic_read(&mpu_6050, MPU_6050_GYRO_XOUT_L, &gyro_x_low_byte, 1);
+    return gyro_x_low_byte;
 }
 
-uint8_t MPU_6050_Get_Gyro_Y_High_Byte()
+uint8_t mpu_6050_get_gyro_y_high_byte()
 {
-    uint8_t Gyro_Y_High_Byte;
-    read_iic(&iic_imu, MPU_6050_GYRO_YOUT_H, &Gyro_Y_High_Byte, 1);
-    return Gyro_Y_High_Byte;
+    uint8_t gyro_y_high_byte;
+    iic_read(&mpu_6050, MPU_6050_GYRO_YOUT_H, &gyro_y_high_byte, 1);
+    return gyro_y_high_byte;
 }
 
-uint8_t MPU_6050_Get_Gyro_Y_Low_Byte()
+uint8_t mpu_6050_get_gyro_y_low_byte()
 {
-    uint8_t Gyro_Y_Low_Byte;
-    read_iic(&iic_imu, MPU_6050_GYRO_YOUT_L, &Gyro_Y_Low_Byte, 1);
-    return Gyro_Y_Low_Byte;
+    uint8_t gyro_y_low_byte;
+    iic_read(&mpu_6050, MPU_6050_GYRO_YOUT_L, &gyro_y_low_byte, 1);
+    return gyro_y_low_byte;
 }
 
-uint8_t MPU_6050_Get_Gyro_Z_High_Byte()
+uint8_t mpu_6050_get_gyro_z_high_byte()
 {
-    uint8_t Gyro_Z_High_Byte;
-    read_iic(&iic_imu, MPU_6050_GYRO_ZOUT_H, &Gyro_Z_High_Byte, 1);
-    return Gyro_Z_High_Byte;
+    uint8_t gyro_z_high_byte;
+    iic_read(&mpu_6050, MPU_6050_GYRO_ZOUT_H, &gyro_z_high_byte, 1);
+    return gyro_z_high_byte;
 }
 
-uint8_t MPU_6050_Get_Gyro_Z_Low_Byte()
+uint8_t mpu_6050_get_gyro_z_low_byte()
 {
-    uint8_t Gyro_Z_Low_Byte;
-    read_iic(&iic_imu, MPU_6050_GYRO_ZOUT_L, &Gyro_Z_Low_Byte, 1);
-    return Gyro_Z_Low_Byte;
+    uint8_t gyro_z_low_byte;
+    iic_read(&mpu_6050, MPU_6050_GYRO_ZOUT_L, &gyro_z_low_byte, 1);
+    return gyro_z_low_byte;
 }
 
-int16_t* MPU_6050_Get_Raw_XYZ_Gyroscope()
+
+int16_t* mpu_6050_get_raw_xyz_gyroscope()
 {
     static int16_t raw_gyroscope_buffer[3];
 
-    uint8_t Raw_Gyroscope_X_High_Byte = MPU_6050_Get_Gyro_X_High_Byte();
-    uint8_t Raw_Gyroscope_X_Low_Byte = MPU_6050_Get_Gyro_X_Low_Byte();
+    uint8_t Raw_Gyroscope_X_High_Byte = mpu_6050_get_gyro_x_high_byte();
+    uint8_t Raw_Gyroscope_X_Low_Byte = mpu_6050_get_gyro_x_low_byte();
     int16_t Raw_Gyroscope_X = (Raw_Gyroscope_X_High_Byte << 8) | Raw_Gyroscope_X_Low_Byte;
 
-    uint8_t Raw_Gyroscope_Y_High_Byte = MPU_6050_Get_Gyro_Y_High_Byte();
-    uint8_t Raw_Gyroscope_Y_Low_Byte = MPU_6050_Get_Gyro_Y_Low_Byte();
+    uint8_t Raw_Gyroscope_Y_High_Byte = mpu_6050_get_gyro_y_high_byte();
+    uint8_t Raw_Gyroscope_Y_Low_Byte = mpu_6050_get_gyro_y_low_byte();
     int16_t Raw_Gyroscope_Y = (Raw_Gyroscope_Y_High_Byte << 8) | Raw_Gyroscope_Y_Low_Byte;
 
-    uint8_t Raw_Gyroscope_Z_High_Byte = MPU_6050_Get_Gyro_Z_High_Byte();
-    uint8_t Raw_Gyroscope_Z_Low_Byte = MPU_6050_Get_Gyro_Z_Low_Byte();
+    uint8_t Raw_Gyroscope_Z_High_Byte = mpu_6050_get_gyro_z_high_byte();
+    uint8_t Raw_Gyroscope_Z_Low_Byte = mpu_6050_get_gyro_z_low_byte();
     int16_t Raw_Gyroscope_Z = (Raw_Gyroscope_Z_High_Byte << 8) | Raw_Gyroscope_Z_Low_Byte;
 
     raw_gyroscope_buffer[0] = Raw_Gyroscope_X;
@@ -389,15 +390,15 @@ int16_t* MPU_6050_Get_Raw_XYZ_Gyroscope()
     return raw_gyroscope_buffer;
 }
 
-float* MPU_6050_Get_Adjusted_XYZ_Gyroscope()
+float* mpu_6050_get_adjusted_xyz_gyroscope()
 {
     int16_t* raw_gyroscope_buffer;
     static float gyroscope_buffer[3];
 
-    uint8_t gyroscope_range = MPU_6050_Get_Gyroscope_Range();
-    int gyroscope_scale = MPU_6050_Get_Gyroscope_Scale(gyroscope_range);
+    uint8_t gyroscope_range = mpu_6050_get_gyroscope_range();
+    int gyroscope_scale = mpu_6050_get_gyroscope_scale(gyroscope_range);
 
-    raw_gyroscope_buffer = MPU_6050_Get_Raw_XYZ_Gyroscope();
+    raw_gyroscope_buffer = mpu_6050_get_raw_xyz_gyroscope();
 
     float Gyroscope_X = ((float)(raw_gyroscope_buffer[0])) / gyroscope_scale;
     float Gyroscope_Y = ((float)(raw_gyroscope_buffer[1])) / gyroscope_scale;

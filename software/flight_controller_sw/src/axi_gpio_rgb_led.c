@@ -19,22 +19,22 @@
 
 
 
-XGpio_Config *gpio_config;
-XGpio gpio;
+XGpio_Config *rgb_led_config;
+XGpio rgb_led;
 
-void gpio_rgb_init(void) {
-	int status = XGpio_Initialize(&gpio, XPAR_AXI_GPIO_0_DEVICE_ID);
+void rgb_led_init(void) {
+	int status = XGpio_Initialize(&rgb_led, XPAR_AXI_GPIO_0_DEVICE_ID);
 	if(status == XST_SUCCESS) {
 		xil_printf("AXI GPIO INIT SUCCESSFUL\n\r");
 	} else {
 		xil_printf("AXI GPIO INIT FAILED\n\r");
 	}
 
-	XGpio_SetDataDirection(&gpio, GPIO_CHANNEL, GPIO_PIN_DIR_OUT);
+	XGpio_SetDataDirection(&rgb_led, GPIO_CHANNEL, GPIO_PIN_DIR_OUT);
 }
 
-void blink_led(u32 rgb_color) {
+void rgb_led_set_output(u32 rgb_color) {
 	rgb_color = (0x7 & rgb_color);
-	XGpio_DiscreteWrite(&gpio, GPIO_CHANNEL, rgb_color);
+	XGpio_DiscreteWrite(&rgb_led, GPIO_CHANNEL, rgb_color);
 }
 

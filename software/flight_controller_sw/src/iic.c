@@ -31,7 +31,7 @@ void iic_init(XIic *Iic) {
    XIic_IntrGlobalDisable(Iic);
 }
 
-void write_iic(IIC *InstancePtr, u8 reg, u8 *Data, int nData) {
+void iic_write(IIC *InstancePtr, u8 reg, u8 *Data, int nData) {
    u8 out[10];
    out[0] = reg;
    out[1] = *Data;
@@ -52,7 +52,7 @@ void write_iic(IIC *InstancePtr, u8 reg, u8 *Data, int nData) {
    }
 }
 
-void read_iic(IIC *InstancePtr, u8 reg, u8 *Data, int nData) {
+void iic_read(IIC *InstancePtr, u8 reg, u8 *Data, int nData) {
    int Status;
    Status = XIic_Start(&InstancePtr->Iic);
    if (Status != XST_SUCCESS) {
