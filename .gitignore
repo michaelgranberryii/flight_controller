@@ -11,3 +11,5 @@ software/*
 !software/flight_controller_sw/
 software/flight_controller_sw/*
 !software/flight_controller_sw/src/
+
+Packages
