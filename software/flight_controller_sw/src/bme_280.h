@@ -1,7 +1,17 @@
 #ifndef BME_280   /* prevent circular inclusions */
 #define BME_280
 
+#include <stdio.h>
+#include <math.h>
+#include "platform.h"
 #include "xiic.h"
+#include "xil_printf.h"
+#include "xil_exception.h"
+#include "xscugic.h"
+#include "xparameters.h"
+#include "sleep.h"
+#include "iic.h"
+
 
 // Default I2C address for the BME_280
 #define BME_280_ADDRESS                        	0x76
@@ -50,14 +60,28 @@
 #define BME_280_RESET							0xE0
 #define BME_280_ID								0xD0
 
-void iic_bme_init();
+void bme_280_init();
 void bme_280_setup();
 void bme_280_reset(u8 reset);
 void bme_280_read_id();
 void bme_280_ctrl_hum();
 void bme_280_ctrl_meas();
-void bme_280_read_hum();
-void bme_280_read_temp();
-void bme_280_read_press();
+void bme_280_config();
+void bme_280_trim_param();
+
+float bme_280_get_altitude();
+void bme_280_alt_calibration();
+
+uint32_t bme_280_read_raw_press();
+uint32_t bme_280_get_corrected_press();
+uint32_t bme_280_compensate_p_int64(int32_t adc_P);
+
+uint32_t bme_280_read_raw_hum();
+uint32_t bme_280_get_corrected_hum();
+uint32_t bme_280_compensate_H_int32(int32_t adc_H);
+
+uint32_t bme_280_read_raw_temp();
+uint32_t bme_280_get_corrected_temp();
+int32_t bme_280_compensate_T_int32(int32_t adc_T);
 
 #endif  /* end of protection macro */
