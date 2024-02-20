@@ -27,17 +27,7 @@
  *
  */
 
-#include <stdio.h>
-#include "platform.h"
-#include "xiic.h"
-#include "xil_printf.h"
-#include "xil_exception.h"
-#include "xscugic.h"
-#include "xparameters.h"
 #include "mpu_6050.h"
-#include "iic.h"
-#include "sleep.h"
-
 
 IIC mpu_6050;
 
@@ -86,7 +76,6 @@ void mpu_6050_print_results() {
 }
 
 void mpu_6050_init() {
-	mpu_6050.chipAddr = MPU_6050_ADDRESS;
 	iic_begin(&mpu_6050, XPAR_AXI_IIC_0_DEVICE_ID, MPU_6050_ADDRESS);
 	mpu_6050_setup();
 }

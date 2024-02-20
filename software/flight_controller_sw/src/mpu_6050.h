@@ -30,7 +30,15 @@
 #ifndef MPU_6050   /* prevent circular inclusions */
 #define MPU_6050
 
+#include <stdio.h>
+#include "platform.h"
 #include "xiic.h"
+#include "xil_printf.h"
+#include "xil_exception.h"
+#include "xscugic.h"
+#include "xparameters.h"
+#include "iic.h"
+#include "sleep.h"
 
 // Default I2C address for the MPU-6050
 #define MPU_6050_ADDRESS                        0x68
