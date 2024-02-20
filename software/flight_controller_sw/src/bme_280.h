@@ -12,6 +12,12 @@
 #include "sleep.h"
 #include "iic.h"
 
+// Define the data types for BME280
+typedef int32_t BME280_S32_t;
+typedef uint32_t BME280_U32_t;
+typedef int64_t BME280_S64_t;
+
+
 
 // Default I2C address for the BME_280
 #define BME_280_ADDRESS                        	0x76
@@ -68,20 +74,28 @@ void bme_280_ctrl_hum();
 void bme_280_ctrl_meas();
 void bme_280_config();
 void bme_280_trim_param();
+void bme_280_trim_param_temp();
+void bme_280_trim_param_press();
+void bme_280_trim_param_hum();
 
+float bme_280_calculate_altitude_cm();
 float bme_280_get_altitude();
 void bme_280_alt_calibration();
 
 uint32_t bme_280_read_raw_press();
-uint32_t bme_280_get_corrected_press();
 uint32_t bme_280_compensate_p_int64(int32_t adc_P);
+uint32_t bme_280_get_corrected_press();
+float bme_280_get_press_Pa();
+float bme_280_get_press_hPa();
 
 uint32_t bme_280_read_raw_hum();
-uint32_t bme_280_get_corrected_hum();
 uint32_t bme_280_compensate_H_int32(int32_t adc_H);
+uint32_t bme_280_get_corrected_hum();
+float bme_280_get_hum();
 
 uint32_t bme_280_read_raw_temp();
-uint32_t bme_280_get_corrected_temp();
+BME280_S32_t bme_280_get_corrected_temp();
 int32_t bme_280_compensate_T_int32(int32_t adc_T);
+float bme_280_get_temp_c();
 
 #endif  /* end of protection macro */
