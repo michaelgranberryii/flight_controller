@@ -1,8 +1,3 @@
-#include <stdio.h>
-#include "platform.h"
-#include "xil_printf.h"
-#include "xtmrctr.h"
-#include "xparameters.h"
 #include "axi_timer_pwm_motor.h"
 
 int current_pulse_width_nSec = 0;

@@ -2,6 +2,11 @@
 #define AXI_TIMER_PWM_MOTOR_H
 
 #include "xtmrctr.h"
+#include <stdio.h>
+#include "platform.h"
+#include "xil_printf.h"
+#include "xtmrctr.h"
+#include "xparameters.h"
 
 // Tmr clk is set to 100 MHz in Vivado
 #define ONE_mSec 1e6 // 1000000 nSec = 1 mSec duty cycle
